@@ -43,7 +43,7 @@ class MicronParser {
     }
 
     convertMicronToHtml(markup) {
-        let html = ""; 
+        let html = "";
 
         let state = {
             literal: false,
@@ -67,14 +67,14 @@ class MicronParser {
             const lineOutput = this.parseLine(line, state);
             if (lineOutput && lineOutput.length > 0) {
                 for (let el of lineOutput) {
-                    html += el.outerHTML; 
+                    html += el.outerHTML;
                 }
             } else {
-                html += "<br>"; 
+                html += "<br>";
             }
         }
 
-        return html; 
+        return html;
     }
 
     parseToHtml(markup) {
@@ -158,6 +158,21 @@ class MicronParser {
                         let outputParts = this.makeOutput(state, headingLine);
                         this.styleToState(latched_style, state);
 
+                        // make outputParts full container width
+                        if (outputParts && outputParts.length > 0) {
+                            const outerDiv = document.createElement("div");
+                            outerDiv.style.display = "block";
+                            outerDiv.style.width = "100%";
+                            this.applyStyleToElement(outerDiv, style);
+
+                            const innerDiv = document.createElement("div");
+                            this.applySectionIndent(innerDiv, state);
+
+                            this.appendOutput(innerDiv, outputParts, state);
+                            outerDiv.appendChild(innerDiv);
+
+                            return [outerDiv];
+                        }
                         // wrap in a heading container
                         if (outputParts && outputParts.length > 0) {
                             const div = document.createElement("div");
@@ -276,9 +291,9 @@ class MicronParser {
                     let input = document.createElement("input");
                     input.type = p.masked ? "password" : "text";
                     input.name = p.name;
-                    input.value = p.data;
+                    input.setAttribute('value', p.data);
                     if (p.width) {
-                        input.size = p.width; 
+                        input.size = p.width;
                     }
                     this.applyStyleToElement(input, this.styleFromState(p.style));
                     container.appendChild(input);
@@ -288,7 +303,7 @@ class MicronParser {
                     cb.type = "checkbox";
                     cb.name = p.name;
                     cb.value = p.value;
-                    if (p.prechecked) cb.checked = true;
+                    if (p.prechecked) cb.setAttribute('checked', true);
                     label.appendChild(cb);
                     label.appendChild(document.createTextNode(" " + p.label));
                     this.applyStyleToElement(label, this.styleFromState(p.style));
@@ -299,7 +314,7 @@ class MicronParser {
                     rb.type = "radio";
                     rb.name = p.name;
                     rb.value = p.value;
-                    if (p.prechecked) rb.checked = true;
+                    if (p.prechecked) rb.setAttribute('checked', true);
                     label.appendChild(rb);
                     label.appendChild(document.createTextNode(" " + p.label));
                     this.applyStyleToElement(label, this.styleFromState(p.style));
@@ -345,7 +360,7 @@ class MicronParser {
                         const varEntries = Object.entries(requestVars);
                         if (varEntries.length > 0) {
                             const queryString = varEntries.map(([k, v]) => `${k}=${v}`).join('|');
-                   
+
                             directURL += directURL.includes('`') ? `|${queryString}` : `\`${queryString}`;
                         }
 
@@ -375,7 +390,7 @@ class MicronParser {
     styleFromState(stateStyle) {
         // stateStyle is a name of a style or a style object
         // in this code, p.style is actually a style name. j,ust return that
-        return stateStyle; 
+        return stateStyle;
     }
 
     applyStyleToElement(el, style) {
@@ -515,7 +530,7 @@ class MicronParser {
                         if (fieldData) {
                             output.push(fieldData.obj);
                             i += fieldData.skip;
-                            continue; 
+                            continue;
                         }
                         break;
 
@@ -528,7 +543,7 @@ class MicronParser {
                           let linkData = this.parseLink(line, i, state);
                           if (linkData) {
                               output.push(linkData.obj);
-                              // mode = "text"; 
+                              // mode = "text";
                               i += linkData.skip;
                               continue;
                           }
