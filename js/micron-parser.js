@@ -121,6 +121,7 @@ class MicronParser {
                 return null;
             }
 
+
             if (!state.literal) {
                 // Comments
                 if (line[0] === "#") {
@@ -191,15 +192,29 @@ class MicronParser {
 
                 // horizontal dividers
                 if (line[0] === "-") {
-                    let dividerChar = "\u2500";
-                    // if second char given
-                    if (line.length > 1) {
-                        dividerChar = line[1];
-                    }
+                // if the line is  just "-", do a normal <hr>
+                if (line.length === 1) {
                     const hr = document.createElement("hr");
                     this.applySectionIndent(hr, state);
                     return [hr];
+                } else {
+                    // if second char given
+                    const dividerChar = line[1];  // use the following character for creating the divider
+                    const repeated = dividerChar.repeat(250);
+
+                    const div = document.createElement("div");
+                    div.style.whiteSpace = "pre";   // needs to not wrap and ignore container formatting
+                    div.textContent = repeated;
+                    div.style.display = "block";
+                    div.style.width   = "100%";
+                    div.style.whiteSpace  = "nowrap";
+                    div.style.overflow    = "hidden";
+                    div.style.margin      = "0.5em 0";
+                    this.applySectionIndent(div, state);
+
+                    return [div];
                 }
+            }
 
             }
 
@@ -441,164 +456,181 @@ class MicronParser {
         return null;
     }
 
-    makeOutput(state, line) {
-        if (state.literal) {
-            // literal mode: output as is, except if `= line
-            if (line === "\\`=") {
-                line = "`=";
-            }
-            return [[this.stateToStyle(state), line]];
+makeOutput(state, line) {
+    if (state.literal) {
+        // literal mode: output as is, except if `= line
+        if (line === "\\`=") {
+            line = "`=";
         }
+        return [[this.stateToStyle(state), line]];
+    }
 
-        let output = [];
-        let part = "";
-        let mode = "text";
-        let escape = false;
-        let skip = 0;
-        let i = 0;
-        while (i < line.length) {
-            let c = line[i];
-            if (skip > 0) {
-                skip--;
-                i++;
-                continue;
-            }
+    let output = [];
+    let part = "";
+    let mode = "text";
+    let escape = false;
+    let skip = 0;
 
-            if (mode === "formatting") {
-                // Handle formatting commands
-                switch(c) {
-                    case '_':
-                        state.formatting.underline = !state.formatting.underline;
-                        break;
-                    case '!':
-                        state.formatting.bold = !state.formatting.bold;
-                        break;
-                    case '*':
-                        state.formatting.italic = !state.formatting.italic;
-                        break;
-                    case 'F':
-                        // next 3 chars = fg color
-                        if (line.length >= i+4) {
-                            let color = line.substr(i+1,3);
-                            state.fg_color = color;
-                            skip = 3;
-                        }
-                        break;
-                    case 'f':
-                        // reset fg
-                        state.fg_color = this.SELECTED_STYLES.plain.fg;
-                        break;
-                    case 'B':
-                        if (line.length >= i+4) {
-                            let color = line.substr(i+1,3);
-                            state.bg_color = color;
-                            skip = 3;
-                        }
-                        break;
-                    case 'b':
-                        // reset bg
-                        state.bg_color = this.DEFAULT_BG;
-                        break;
-                    case '`':
-                        // reset all formatting
-                        state.formatting.bold = false;
-                        state.formatting.underline = false;
-                        state.formatting.italic = false;
-                        state.fg_color = this.SELECTED_STYLES.plain.fg;
-                        state.bg_color = this.DEFAULT_BG;
-                        state.align = state.default_align;
-                        break;
-                    case 'c':
-                        state.align = (state.align === "center") ? state.default_align : "center";
-                        break;
-                    case 'l':
-                        state.align = (state.align === "left") ? state.default_align : "left";
-                        break;
-                    case 'r':
-                        state.align = (state.align === "right") ? state.default_align : "right";
-                        break;
-                    case 'a':
-                        state.align = state.default_align;
-                        break;
-                    case '<':
-                        // Flush current text first
-                        if (part.length > 0) {
-                            output.push([this.stateToStyle(state), part]);
-                            part = "";
-                        }
-                        let fieldData = this.parseField(line, i, state);
-                        if (fieldData) {
-                            output.push(fieldData.obj);
-                            i += fieldData.skip;
-                            continue;
-                        }
-                        break;
-
-                      case '[':
-                          // flush current text first
-                          if (part.length > 0) {
-                              output.push([this.stateToStyle(state), part]);
-                              part = "";
-                          }
-                          let linkData = this.parseLink(line, i, state);
-                          if (linkData) {
-                              output.push(linkData.obj);
-                              // mode = "text";
-                              i += linkData.skip;
-                              continue;
-                          }
-                          break;
-
-                    default:
-                        // unknown formatting char, ignore
-                        break;
-                }
-                mode = "text";
-                if (part.length > 0) {
-                    // no flush needed, no text added
-                }
-            } else {
-                // mode === "text"
-                if (c === '\\') {
-                    if (escape) {
-                        // was escaped backslash
-                        part += c;
-                        escape = false;
-                    } else {
-                        escape = true;
-                    }
-                } else if (c === '`') {
-                    if (escape) {
-                        // just a literal backtick
-                        part += c;
-                        escape = false;
-                    } else {
-                        // switch to formatting mode
-                        if (part.length > 0) {
-                            output.push([this.stateToStyle(state), part]);
-                            part = "";
-                        }
-                        mode = "formatting";
-                    }
-                } else {
-                    if (escape) {
-                        part += '\\';
-                        escape = false;
-                    }
-                    part += c;
-                }
-            }
-
-            i++;
-        }
-
-        // end of line
+    const flushPart = () => {
         if (part.length > 0) {
             output.push([this.stateToStyle(state), part]);
+            part = "";
+        }
+    };
+
+    let i = 0;
+    while (i < line.length) {
+        let c = line[i];
+
+        if (skip > 0) {
+            skip--;
+            i++;
+            continue;
         }
 
-        return (output.length > 0) ? output : null;
+        if (mode === "formatting") {
+            switch (c) {
+                case '_':
+                    state.formatting.underline = !state.formatting.underline;
+                    break;
+                case '!':
+                    state.formatting.bold = !state.formatting.bold;
+                    break;
+                case '*':
+                    state.formatting.italic = !state.formatting.italic;
+                    break;
+
+                case 'F':
+                    // next 3 chars => fg color
+                    if (line.length >= i + 4) {
+                        let color = line.substr(i+1, 3);
+                        state.fg_color = color;
+                        skip = 3;
+                    }
+                    break;
+                case 'f':
+                    // reset fg
+                    state.fg_color = this.SELECTED_STYLES.plain.fg;
+                    break;
+
+                case 'B':
+                    // next 3 chars => bg color
+                    if (line.length >= i + 4) {
+                        let color = line.substr(i+1, 3);
+                        state.bg_color = color;
+                        skip = 3;
+                    }
+                    break;
+                case 'b':
+                    // reset bg
+                    state.bg_color = this.DEFAULT_BG;
+                    break;
+                case '`':
+                    state.formatting.bold = false;
+                    state.formatting.underline = false;
+                    state.formatting.italic = false;
+                    state.fg_color = this.SELECTED_STYLES.plain.fg;
+                    state.bg_color = this.DEFAULT_BG;
+                    state.align    = state.default_align;
+                    mode = "text";
+                    break;
+                case 'c':
+                    state.align = 'center';
+                    break;
+                case 'l':
+                    state.align = 'left';
+                    break;
+                case 'r':
+                    state.align = 'right';
+                    break;
+                case 'a':
+                    state.align = state.default_align;
+                    break;
+
+                case '<':
+                    // if there's already text, flush it
+                    flushPart();
+                    let fieldData = this.parseField(line, i, state);
+                    if (fieldData) {
+                        output.push(fieldData.obj);
+                        i += fieldData.skip;
+                        // do not i++ here or we'll skip an extra char
+                        continue;
+                    }
+                    break;
+
+                case '[':
+                    // flush current text first
+                    flushPart();
+                    let linkData = this.parseLink(line, i, state);
+                    if (linkData) {
+                        output.push(linkData.obj);
+                        i += linkData.skip;
+                        continue;
+                    }
+                    break;
+
+                default:
+                    // unknown formatting char, ignore
+                    break;
+            }
+            mode = "text";
+            i++;
+            continue;
+
+        } else {
+            // mode === "text"
+            if (escape) {
+                part += c;
+                escape = false;
+            }
+            else if (c === '\\') {
+                escape = true;
+            }
+            else if (c === '`') {
+                if (i + 1 < line.length && line[i+1] === '`') {
+                    flushPart();
+                    state.formatting.bold = false;
+                    state.formatting.underline = false;
+                    state.formatting.italic = false;
+                    state.fg_color = this.SELECTED_STYLES.plain.fg;
+                    state.bg_color = this.DEFAULT_BG;
+                    state.align = state.default_align;
+                    i += 2;
+                    continue;
+                } else {
+                    flushPart();
+                    mode = "formatting";
+                    i++;
+                    continue;
+                }
+            }
+            else if (c === '[') {
+                flushPart();
+                let linkDataText = this.parseLink(line, i, state);
+                if (linkDataText) {
+                    output.push(linkDataText.obj);
+                    i += linkDataText.skip;
+                    continue;
+                } else {
+                    // not a link
+                    part += '[';
+                }
+            }
+            else {
+                // normal text char
+                part += c;
+            }
+            i++;
+        }
     }
+    // end of line
+    if (part.length > 0) {
+        output.push([this.stateToStyle(state), part]);
+    }
+
+    return (output.length > 0) ? output : null;
+}
 
     parseField(line, startIndex, state) {
         let field_start = startIndex + 1;
