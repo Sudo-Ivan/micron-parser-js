@@ -473,7 +473,7 @@ makeOutput(state, line) {
 
     const flushPart = () => {
         if (part.length > 0) {
-            output.push([this.stateToStyle(state), this.forceMonospace(part)]);
+            output.push([this.stateToStyle(state), this.splitAtSpaces(part)]);
             part = "";
         }
     };
@@ -626,7 +626,7 @@ makeOutput(state, line) {
     }
     // end of line
     if (part.length > 0) {
-        output.push([this.stateToStyle(state), this.forceMonospace(part)]);
+        output.push([this.stateToStyle(state), this.splitAtSpaces(part)]);
     }
 
     return (output.length > 0) ? output : null;
@@ -744,7 +744,7 @@ makeOutput(state, line) {
         link_url = MicronParser.formatNomadnetworkUrl(link_url);
 
         // Apply forceMonospace
-        link_label = this.forceMonospace(link_label);
+        link_label = this.splitAtSpaces(link_label);
 
         let style = this.stateToStyle(state);
         let obj = {
@@ -759,10 +759,20 @@ makeOutput(state, line) {
         return { obj: obj, skip: skip };
     }
 
+    splitAtSpaces(line) {
+        let out = "";
+        let wordArr = line.split(" ");
+        for (let word of wordArr) {
+            word += " ";
+            out += "<span class='wordSpan'>" + this.forceMonospace(word) + "</span>";
+        }
+        return out;
+    }
+
     forceMonospace(line) {
         let out = "";
-        let lineArr = line.split("");
-        for (let char of lineArr) {
+        let charArr = line.split("");
+        for (let char of charArr) {
             out += "<span class='nodeText'>" + char + "</span>";
         }
         return out;
