@@ -162,7 +162,7 @@ class MicronParser {
                         // make outputParts full container width
                         if (outputParts && outputParts.length > 0) {
                             const outerDiv = document.createElement("div");
-                            outerDiv.style.display = "block";
+                            outerDiv.style.display = "inline-block";
                             outerDiv.style.width = "100%";
                             this.applyStyleToElement(outerDiv, style);
 
@@ -205,7 +205,7 @@ class MicronParser {
                     const div = document.createElement("div");
                     div.style.whiteSpace = "pre";   // needs to not wrap and ignore container formatting
                     div.textContent = repeated;
-                    div.style.display = "block";
+                    div.style.display = "inline-block";
                     div.style.width   = "100%";
                     div.style.whiteSpace  = "nowrap";
                     div.style.overflow    = "hidden";
@@ -765,7 +765,6 @@ makeOutput(state, line) {
         for (let char of lineArr) {
             out += "<span class='nodeText'>" + char + "</span>";
         }
-        out += "<br>";
         return out;
     }
 }
