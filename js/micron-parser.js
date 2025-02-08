@@ -286,7 +286,7 @@ class MicronParser {
         for (let p of parts) {
             if (typeof p === 'string') {
                 let span = document.createElement("span");
-                span.textContent = p;
+                span.innerHTML = p;
                 container.appendChild(span);
             } else if (Array.isArray(p) && p.length === 2) {
                 // tuple: [styleSpec, text]
@@ -298,7 +298,7 @@ class MicronParser {
                     this.applyStyleToElement(currentSpan, styleSpec);
                     currentStyle = styleSpec;
                 }
-                currentSpan.textContent += text;
+                currentSpan.innerHTML += text;
             } else if (p && typeof p === 'object') {
                 // field, checkbox, radio, link
                 flushSpan();
@@ -385,7 +385,7 @@ class MicronParser {
                         a.setAttribute("onclick", `event.preventDefault(); onNodePageUrlClick('${directURL}', null, false, false)`);
                     }
 
-                    a.textContent = p.label;
+                    a.innerHTML = p.label;
                     this.applyStyleToElement(a, this.styleFromState(p.style));
                     container.appendChild(a);
                 }
