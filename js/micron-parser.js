@@ -199,7 +199,7 @@ class MicronParser {
                     return [hr];
                 } else {
                     // if second char given
-                    const dividerChar = line[1];  // use the following character for creating the divider
+                    const dividerChar = this.forceMonospace(line[1]);  // use the following character for creating the divider
                     const repeated = dividerChar.repeat(250);
 
                     const div = document.createElement("div");
@@ -473,7 +473,7 @@ makeOutput(state, line) {
 
     const flushPart = () => {
         if (part.length > 0) {
-            output.push([this.stateToStyle(state), part]);
+            output.push([this.stateToStyle(state), this.forceMonospace(part)]);
             part = "";
         }
     };
@@ -626,7 +626,7 @@ makeOutput(state, line) {
     }
     // end of line
     if (part.length > 0) {
-        output.push([this.stateToStyle(state), part]);
+        output.push([this.stateToStyle(state), this.forceMonospace(part)]);
     }
 
     return (output.length > 0) ? output : null;
@@ -743,6 +743,9 @@ makeOutput(state, line) {
         // format the URL
         link_url = MicronParser.formatNomadnetworkUrl(link_url);
 
+        // Apply forceMonospace
+        link_label = this.forceMonospace(link_label);
+
         let style = this.stateToStyle(state);
         let obj = {
             type: "link",
@@ -756,6 +759,15 @@ makeOutput(state, line) {
         return { obj: obj, skip: skip };
     }
 
+    forceMonospace(line) {
+        let out = "";
+        let lineArr = line.split("");
+        for (let char of lineArr) {
+            out += "<span class='nodeText'>" + char + "</span>";
+        }
+        out += "<br>";
+        return out;
+    }
 }
 
 export default MicronParser;
