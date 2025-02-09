@@ -765,7 +765,7 @@ makeOutput(state, line) {
         for (let i = 0; i < wordArr.length; i++) {
             out += "<span class='wordSpan'>" + this.forceMonospace(wordArr[i]) + "</span>";
             if (i < wordArr.length - 1) {
-                out += "<span class='nodeText'> </span>";
+                out += " ";
             }
         }
         return out;
