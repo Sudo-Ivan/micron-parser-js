@@ -764,7 +764,7 @@ class MicronParser {
         let out = "";
         let wordArr = line.split(" ");
         for (let i = 0; i < wordArr.length; i++) {
-            out += "<span class='wordSpan'>" + this.forceMonospace(wordArr[i]) + "</span>";
+            out += "<span class='mws'>" + this.forceMonospace(wordArr[i]) + "</span>";
             if (i < wordArr.length - 1) {
                 out += " ";
             }
@@ -776,7 +776,7 @@ class MicronParser {
         let out = "";
         let charArr = line.split("");
         for (let char of charArr) {
-            out += "<span class='nodeText'>" + char + "</span>";
+            out += "<span class='mnt'>" + char + "</span>";
         }
         return out;
     }

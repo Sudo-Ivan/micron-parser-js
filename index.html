@@ -13,33 +13,40 @@
             font-weight: 400;
             font-style: normal;
         }
+
         body {
             font-family: Roboto Mono Nerd Font, monospace, monospace !important;
             line-height: normal !important;
         }
-         pre {
+
+        pre {
             font-family: Roboto Mono Nerd Font, monospace, monospace !important;
             line-height: normal !important;
         }
 
-        .nodeText {
+        /* node text */
+        .mnt {
             display: inline-block;
             width: 0.6em;
             text-align: center;
             white-space: pre;
+            text-decoration: inherit;
         }
-        .wordSpan {
+
+        /* word span */
+        .mws {
+            text-decoration: inherit;
             display: inline-block;
         }
     </style>
 </head>
 <body class="bg-[#000] text-white h-screen overflow-hidden">
-    <div class="flex h-full">
-        <div class="w-1/2 border-r border-gray-700 ">
-            <textarea 
-                id="text-editor"
-                class="w-full h-full bg-[#000] text-white p-4 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 "
-                placeholder="">
+<div class="flex h-full">
+    <div class="w-1/2 border-r border-gray-700 ">
+            <textarea
+                    id="text-editor"
+                    class="w-full h-full bg-[#000] text-white p-4 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 "
+                    placeholder="">
 
 -∿
 <
@@ -426,39 +433,39 @@ To display literal content, for example source-code, or blocks of text that shou
 `=
 
                 </textarea>
-        </div>
+    </div>
 
-        <div class="w-1/2 ">
+    <div class="w-1/2 ">
             <pre id="output" class="bg-[#000] break-words whitespace-pre-wrap p-4 text-wrap h-full overflow-auto">
                
             </pre>
-        </div>
     </div>
+</div>
 
-    <script type="module">
-        import MicronParser from './js/micron-parser.js';
-        const parser = new MicronParser(true); 
+<script type="module">
+    import MicronParser from './js/micron-parser.js';
 
-        const textEditor = document.getElementById('text-editor');
-        const output = document.getElementById('output');
+    const parser = new MicronParser(true);
 
-        const init = () => {
-        	renderOutput();
-        }
+    const textEditor = document.getElementById('text-editor');
+    const output = document.getElementById('output');
 
-        
+    const init = () => {
+        renderOutput();
+    }
 
-        const renderOutput = () => {
-            const inputText = textEditor.value;
-            const parsedHtml = parser.convertMicronToHtml(inputText);
 
-            output.innerHTML = parsedHtml;
-        };
+    const renderOutput = () => {
+        const inputText = textEditor.value;
+        const parsedHtml = parser.convertMicronToHtml(inputText);
 
-        init();
+        output.innerHTML = parsedHtml;
+    };
 
-      
-        textEditor.addEventListener('input', renderOutput);
-    </script>
+    init();
+
+
+    textEditor.addEventListener('input', renderOutput);
+</script>
 </body>
 </html>
