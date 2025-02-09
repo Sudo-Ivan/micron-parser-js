@@ -247,7 +247,8 @@ class MicronParser {
         // indent by state.depth
         let indent = (state.depth - 1) * 2;
         if (indent > 0) {
-            el.style.marginLeft = (indent * 10) + "px";
+            // Indent according to forceMonospace() character width
+            el.style.marginLeft = (indent * 0.6) + "em";
         }
     }
 
