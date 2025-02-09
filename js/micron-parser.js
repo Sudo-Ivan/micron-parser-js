@@ -706,7 +706,7 @@ makeOutput(state, line) {
             };
         }
 
-        let skip = (field_end - startIndex) + 2;
+        let skip = (field_end - startIndex);
         return { obj: obj, skip: skip };
     }
 
@@ -755,7 +755,7 @@ makeOutput(state, line) {
             style: style
         };
 
-        let skip = (endpos - startIndex) + 2;
+        let skip = (endpos - startIndex);
         return { obj: obj, skip: skip };
     }
 
