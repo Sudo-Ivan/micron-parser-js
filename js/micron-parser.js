@@ -162,7 +162,7 @@ class MicronParser {
                         // make outputParts full container width
                         if (outputParts && outputParts.length > 0) {
                             const outerDiv = document.createElement("div");
-                            outerDiv.style.display = "block";
+                            outerDiv.style.display = "inline-block";
                             outerDiv.style.width = "100%";
                             this.applyStyleToElement(outerDiv, style);
 
@@ -205,7 +205,7 @@ class MicronParser {
                     const div = document.createElement("div");
                     div.style.whiteSpace = "pre";   // needs to not wrap and ignore container formatting
                     div.textContent = repeated;
-                    div.style.display = "block";
+                    div.style.display = "inline-block";
                     div.style.width   = "100%";
                     div.style.whiteSpace  = "nowrap";
                     div.style.overflow    = "hidden";
@@ -247,7 +247,8 @@ class MicronParser {
         // indent by state.depth
         let indent = (state.depth - 1) * 2;
         if (indent > 0) {
-            el.style.marginLeft = (indent * 10) + "px";
+            // Indent according to forceMonospace() character width
+            el.style.marginLeft = (indent * 0.6) + "em";
         }
     }
 
@@ -286,7 +287,7 @@ class MicronParser {
         for (let p of parts) {
             if (typeof p === 'string') {
                 let span = document.createElement("span");
-                span.textContent = p;
+                span.innerHTML = p;
                 container.appendChild(span);
             } else if (Array.isArray(p) && p.length === 2) {
                 // tuple: [styleSpec, text]
@@ -298,7 +299,7 @@ class MicronParser {
                     this.applyStyleToElement(currentSpan, styleSpec);
                     currentStyle = styleSpec;
                 }
-                currentSpan.textContent += text;
+                currentSpan.innerHTML += text;
             } else if (p && typeof p === 'object') {
                 // field, checkbox, radio, link
                 flushSpan();
@@ -385,7 +386,7 @@ class MicronParser {
                         a.setAttribute("onclick", `event.preventDefault(); onNodePageUrlClick('${directURL}', null, false, false)`);
                     }
 
-                    a.textContent = p.label;
+                    a.innerHTML = p.label;
                     this.applyStyleToElement(a, this.styleFromState(p.style));
                     container.appendChild(a);
                 }
@@ -473,7 +474,7 @@ makeOutput(state, line) {
 
     const flushPart = () => {
         if (part.length > 0) {
-            output.push([this.stateToStyle(state), part]);
+            output.push([this.stateToStyle(state), this.splitAtSpaces(part)]);
             part = "";
         }
     };
@@ -626,7 +627,7 @@ makeOutput(state, line) {
     }
     // end of line
     if (part.length > 0) {
-        output.push([this.stateToStyle(state), part]);
+        output.push([this.stateToStyle(state), this.splitAtSpaces(part)]);
     }
 
     return (output.length > 0) ? output : null;
@@ -706,7 +707,7 @@ makeOutput(state, line) {
             };
         }
 
-        let skip = (field_end - startIndex) + 2;
+        let skip = (field_end - startIndex);
         return { obj: obj, skip: skip };
     }
 
@@ -743,6 +744,9 @@ makeOutput(state, line) {
         // format the URL
         link_url = MicronParser.formatNomadnetworkUrl(link_url);
 
+        // Apply forceMonospace
+        link_label = this.splitAtSpaces(link_label);
+
         let style = this.stateToStyle(state);
         let obj = {
             type: "link",
@@ -752,10 +756,30 @@ makeOutput(state, line) {
             style: style
         };
 
-        let skip = (endpos - startIndex) + 2;
+        let skip = (endpos - startIndex);
         return { obj: obj, skip: skip };
     }
 
+    splitAtSpaces(line) {
+        let out = "";
+        let wordArr = line.split(" ");
+        for (let i = 0; i < wordArr.length; i++) {
+            out += "<span class='wordSpan'>" + this.forceMonospace(wordArr[i]) + "</span>";
+            if (i < wordArr.length - 1) {
+                out += " ";
+            }
+        }
+        return out;
+    }
+
+    forceMonospace(line) {
+        let out = "";
+        let charArr = line.split("");
+        for (let char of charArr) {
+            out += "<span class='nodeText'>" + char + "</span>";
+        }
+        return out;
+    }
 }
 
 export default MicronParser;
