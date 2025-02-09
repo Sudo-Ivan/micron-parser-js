@@ -199,7 +199,7 @@ class MicronParser {
                     return [hr];
                 } else {
                     // if second char given
-                    const dividerChar = this.forceMonospace(line[1]);  // use the following character for creating the divider
+                    const dividerChar = line[1];  // use the following character for creating the divider
                     const repeated = dividerChar.repeat(250);
 
                     const div = document.createElement("div");
