@@ -11,24 +11,24 @@ class MicronParser {
 
     constructor(darkTheme = true) {
         this.darkTheme = darkTheme;
-        this.DEFAULT_FG_DARK  = "ddd";
+        this.DEFAULT_FG_DARK = "ddd";
         this.DEFAULT_FG_LIGHT = "222";
         this.DEFAULT_BG = "default";
 
         this.SELECTED_STYLES = null;
 
         this.STYLES_DARK = {
-            "plain":    { fg: this.DEFAULT_FG_DARK, bg: this.DEFAULT_BG, bold: false, underline: false, italic: false },
-            "heading1": { fg: "222", bg: "bbb", bold: false, underline: false, italic: false },
-            "heading2": { fg: "111", bg: "999", bold: false, underline: false, italic: false },
-            "heading3": { fg: "000", bg: "777", bold: false, underline: false, italic: false }
+            "plain": {fg: this.DEFAULT_FG_DARK, bg: this.DEFAULT_BG, bold: false, underline: false, italic: false},
+            "heading1": {fg: "222", bg: "bbb", bold: false, underline: false, italic: false},
+            "heading2": {fg: "111", bg: "999", bold: false, underline: false, italic: false},
+            "heading3": {fg: "000", bg: "777", bold: false, underline: false, italic: false}
         };
 
         this.STYLES_LIGHT = {
-            "plain":    { fg: this.DEFAULT_FG_LIGHT, bg: this.DEFAULT_BG, bold: false, underline: false, italic: false },
-            "heading1": { fg: "000", bg: "777", bold: false, underline: false, italic: false },
-            "heading2": { fg: "111", bg: "aaa", bold: false, underline: false, italic: false },
-            "heading3": { fg: "222", bg: "ccc", bold: false, underline: false, italic: false }
+            "plain": {fg: this.DEFAULT_FG_LIGHT, bg: this.DEFAULT_BG, bold: false, underline: false, italic: false},
+            "heading1": {fg: "000", bg: "777", bold: false, underline: false, italic: false},
+            "heading2": {fg: "111", bg: "aaa", bold: false, underline: false, italic: false},
+            "heading3": {fg: "222", bg: "ccc", bold: false, underline: false, italic: false}
         };
 
         if (this.darkTheme) {
@@ -69,6 +69,8 @@ class MicronParser {
                 for (let el of lineOutput) {
                     html += el.outerHTML;
                 }
+            } else if (lineOutput && lineOutput.length === 0) {
+                // skip
             } else {
                 html += "<br>";
             }
@@ -77,7 +79,7 @@ class MicronParser {
         return html;
     }
 
-    parseToHtml(markup) {
+    convertMicronToFragment(markup) {
         // Create a fragment to hold all the Micron output
         const fragment = document.createDocumentFragment();
 
@@ -105,6 +107,8 @@ class MicronParser {
                 for (let el of lineOutput) {
                     fragment.appendChild(el);
                 }
+            } else if (lineOutput && lineOutput.length === 0) {
+                // skip
             } else {
                 fragment.appendChild(document.createElement("br"));
             }
@@ -125,7 +129,7 @@ class MicronParser {
             if (!state.literal) {
                 // Comments
                 if (line[0] === "#") {
-                    return null;
+                    return [];
                 }
 
                 // Reset section depth
@@ -192,29 +196,29 @@ class MicronParser {
 
                 // horizontal dividers
                 if (line[0] === "-") {
-                // if the line is  just "-", do a normal <hr>
-                if (line.length === 1) {
-                    const hr = document.createElement("hr");
-                    this.applySectionIndent(hr, state);
-                    return [hr];
-                } else {
-                    // if second char given
-                    const dividerChar = line[1];  // use the following character for creating the divider
-                    const repeated = dividerChar.repeat(250);
+                    // if the line is  just "-", do a normal <hr>
+                    if (line.length === 1) {
+                        const hr = document.createElement("hr");
+                        this.applySectionIndent(hr, state);
+                        return [hr];
+                    } else {
+                        // if second char given
+                        const dividerChar = line[1];  // use the following character for creating the divider
+                        const repeated = dividerChar.repeat(250);
 
-                    const div = document.createElement("div");
-                    div.style.whiteSpace = "pre";   // needs to not wrap and ignore container formatting
-                    div.textContent = repeated;
-                    div.style.display = "inline-block";
-                    div.style.width   = "100%";
-                    div.style.whiteSpace  = "nowrap";
-                    div.style.overflow    = "hidden";
-                    div.style.margin      = "0.5em 0";
-                    this.applySectionIndent(div, state);
+                        const div = document.createElement("div");
+                        div.style.whiteSpace = "pre";   // needs to not wrap and ignore container formatting
+                        div.textContent = repeated;
+                        div.style.display = "inline-block";
+                        div.style.width = "100%";
+                        div.style.whiteSpace = "nowrap";
+                        div.style.overflow = "hidden";
+                        div.style.margin = "0.5em 0";
+                        this.applySectionIndent(div, state);
 
-                    return [div];
+                        return [div];
+                    }
                 }
-            }
 
             }
 
@@ -446,10 +450,10 @@ class MicronParser {
         // If grayscale 'gxx'
         if (c.length === 3 && c[0] === 'g') {
             // treat xx as a number and map to gray
-            let val = parseInt(c.slice(1),10);
+            let val = parseInt(c.slice(1), 10);
             if (isNaN(val)) val = 50;
             // map 0-99 scale to a gray hex
-            let h = Math.floor(val*2.55).toString(16).padStart(2,'0');
+            let h = Math.floor(val * 2.55).toString(16).padStart(2, '0');
             return "#" + h + h + h;
         }
 
@@ -457,181 +461,177 @@ class MicronParser {
         return null;
     }
 
-makeOutput(state, line) {
-    if (state.literal) {
-        // literal mode: output as is, except if `= line
-        if (line === "\\`=") {
-            line = "`=";
+    makeOutput(state, line) {
+        if (state.literal) {
+            // literal mode: output as is, except if `= line
+            if (line === "\\`=") {
+                line = "`=";
+            }
+            return [[this.stateToStyle(state), line]];
         }
-        return [[this.stateToStyle(state), line]];
-    }
 
-    let output = [];
-    let part = "";
-    let mode = "text";
-    let escape = false;
-    let skip = 0;
+        let output = [];
+        let part = "";
+        let mode = "text";
+        let escape = false;
+        let skip = 0;
 
-    const flushPart = () => {
+        const flushPart = () => {
+            if (part.length > 0) {
+                output.push([this.stateToStyle(state), this.splitAtSpaces(part)]);
+                part = "";
+            }
+        };
+
+        let i = 0;
+        while (i < line.length) {
+            let c = line[i];
+
+            if (skip > 0) {
+                skip--;
+                i++;
+                continue;
+            }
+
+            if (mode === "formatting") {
+                switch (c) {
+                    case '_':
+                        state.formatting.underline = !state.formatting.underline;
+                        break;
+                    case '!':
+                        state.formatting.bold = !state.formatting.bold;
+                        break;
+                    case '*':
+                        state.formatting.italic = !state.formatting.italic;
+                        break;
+
+                    case 'F':
+                        // next 3 chars => fg color
+                        if (line.length >= i + 4) {
+                            let color = line.substr(i + 1, 3);
+                            state.fg_color = color;
+                            skip = 3;
+                        }
+                        break;
+                    case 'f':
+                        // reset fg
+                        state.fg_color = this.SELECTED_STYLES.plain.fg;
+                        break;
+
+                    case 'B':
+                        // next 3 chars => bg color
+                        if (line.length >= i + 4) {
+                            let color = line.substr(i + 1, 3);
+                            state.bg_color = color;
+                            skip = 3;
+                        }
+                        break;
+                    case 'b':
+                        // reset bg
+                        state.bg_color = this.DEFAULT_BG;
+                        break;
+                    case '`':
+                        state.formatting.bold = false;
+                        state.formatting.underline = false;
+                        state.formatting.italic = false;
+                        state.fg_color = this.SELECTED_STYLES.plain.fg;
+                        state.bg_color = this.DEFAULT_BG;
+                        state.align = state.default_align;
+                        mode = "text";
+                        break;
+                    case 'c':
+                        state.align = 'center';
+                        break;
+                    case 'l':
+                        state.align = 'left';
+                        break;
+                    case 'r':
+                        state.align = 'right';
+                        break;
+                    case 'a':
+                        state.align = state.default_align;
+                        break;
+
+                    case '<':
+                        // if there's already text, flush it
+                        flushPart();
+                        let fieldData = this.parseField(line, i, state);
+                        if (fieldData) {
+                            output.push(fieldData.obj);
+                            i += fieldData.skip;
+                            // do not i++ here or we'll skip an extra char
+                            continue;
+                        }
+                        break;
+
+                    case '[':
+                        // flush current text first
+                        flushPart();
+                        let linkData = this.parseLink(line, i, state);
+                        if (linkData) {
+                            output.push(linkData.obj);
+                            i += linkData.skip;
+                            continue;
+                        }
+                        break;
+
+                    default:
+                        // unknown formatting char, ignore
+                        break;
+                }
+                mode = "text";
+                i++;
+                continue;
+
+            } else {
+                // mode === "text"
+                if (escape) {
+                    part += c;
+                    escape = false;
+                } else if (c === '\\') {
+                    escape = true;
+                } else if (c === '`') {
+                    if (i + 1 < line.length && line[i + 1] === '`') {
+                        flushPart();
+                        state.formatting.bold = false;
+                        state.formatting.underline = false;
+                        state.formatting.italic = false;
+                        state.fg_color = this.SELECTED_STYLES.plain.fg;
+                        state.bg_color = this.DEFAULT_BG;
+                        state.align = state.default_align;
+                        i += 2;
+                        continue;
+                    } else {
+                        flushPart();
+                        mode = "formatting";
+                        i++;
+                        continue;
+                    }
+                } else if (c === '[') {
+                    flushPart();
+                    let linkDataText = this.parseLink(line, i, state);
+                    if (linkDataText) {
+                        output.push(linkDataText.obj);
+                        i += linkDataText.skip;
+                        continue;
+                    } else {
+                        // not a link
+                        part += '[';
+                    }
+                } else {
+                    // normal text char
+                    part += c;
+                }
+                i++;
+            }
+        }
+        // end of line
         if (part.length > 0) {
             output.push([this.stateToStyle(state), this.splitAtSpaces(part)]);
-            part = "";
-        }
-    };
-
-    let i = 0;
-    while (i < line.length) {
-        let c = line[i];
-
-        if (skip > 0) {
-            skip--;
-            i++;
-            continue;
         }
 
-        if (mode === "formatting") {
-            switch (c) {
-                case '_':
-                    state.formatting.underline = !state.formatting.underline;
-                    break;
-                case '!':
-                    state.formatting.bold = !state.formatting.bold;
-                    break;
-                case '*':
-                    state.formatting.italic = !state.formatting.italic;
-                    break;
-
-                case 'F':
-                    // next 3 chars => fg color
-                    if (line.length >= i + 4) {
-                        let color = line.substr(i+1, 3);
-                        state.fg_color = color;
-                        skip = 3;
-                    }
-                    break;
-                case 'f':
-                    // reset fg
-                    state.fg_color = this.SELECTED_STYLES.plain.fg;
-                    break;
-
-                case 'B':
-                    // next 3 chars => bg color
-                    if (line.length >= i + 4) {
-                        let color = line.substr(i+1, 3);
-                        state.bg_color = color;
-                        skip = 3;
-                    }
-                    break;
-                case 'b':
-                    // reset bg
-                    state.bg_color = this.DEFAULT_BG;
-                    break;
-                case '`':
-                    state.formatting.bold = false;
-                    state.formatting.underline = false;
-                    state.formatting.italic = false;
-                    state.fg_color = this.SELECTED_STYLES.plain.fg;
-                    state.bg_color = this.DEFAULT_BG;
-                    state.align    = state.default_align;
-                    mode = "text";
-                    break;
-                case 'c':
-                    state.align = 'center';
-                    break;
-                case 'l':
-                    state.align = 'left';
-                    break;
-                case 'r':
-                    state.align = 'right';
-                    break;
-                case 'a':
-                    state.align = state.default_align;
-                    break;
-
-                case '<':
-                    // if there's already text, flush it
-                    flushPart();
-                    let fieldData = this.parseField(line, i, state);
-                    if (fieldData) {
-                        output.push(fieldData.obj);
-                        i += fieldData.skip;
-                        // do not i++ here or we'll skip an extra char
-                        continue;
-                    }
-                    break;
-
-                case '[':
-                    // flush current text first
-                    flushPart();
-                    let linkData = this.parseLink(line, i, state);
-                    if (linkData) {
-                        output.push(linkData.obj);
-                        i += linkData.skip;
-                        continue;
-                    }
-                    break;
-
-                default:
-                    // unknown formatting char, ignore
-                    break;
-            }
-            mode = "text";
-            i++;
-            continue;
-
-        } else {
-            // mode === "text"
-            if (escape) {
-                part += c;
-                escape = false;
-            }
-            else if (c === '\\') {
-                escape = true;
-            }
-            else if (c === '`') {
-                if (i + 1 < line.length && line[i+1] === '`') {
-                    flushPart();
-                    state.formatting.bold = false;
-                    state.formatting.underline = false;
-                    state.formatting.italic = false;
-                    state.fg_color = this.SELECTED_STYLES.plain.fg;
-                    state.bg_color = this.DEFAULT_BG;
-                    state.align = state.default_align;
-                    i += 2;
-                    continue;
-                } else {
-                    flushPart();
-                    mode = "formatting";
-                    i++;
-                    continue;
-                }
-            }
-            else if (c === '[') {
-                flushPart();
-                let linkDataText = this.parseLink(line, i, state);
-                if (linkDataText) {
-                    output.push(linkDataText.obj);
-                    i += linkDataText.skip;
-                    continue;
-                } else {
-                    // not a link
-                    part += '[';
-                }
-            }
-            else {
-                // normal text char
-                part += c;
-            }
-            i++;
-        }
+        return (output.length > 0) ? output : null;
     }
-    // end of line
-    if (part.length > 0) {
-        output.push([this.stateToStyle(state), this.splitAtSpaces(part)]);
-    }
-
-    return (output.length > 0) ? output : null;
-}
 
     parseField(line, startIndex, state) {
         let field_start = startIndex + 1;
@@ -653,19 +653,19 @@ makeOutput(state, line) {
 
             if (field_flags.includes('^')) {
                 field_type = "radio";
-                field_flags = field_flags.replace('^','');
+                field_flags = field_flags.replace('^', '');
             } else if (field_flags.includes('?')) {
                 field_type = "checkbox";
-                field_flags = field_flags.replace('?','');
+                field_flags = field_flags.replace('?', '');
             } else if (field_flags.includes('!')) {
                 field_masked = true;
-                field_flags = field_flags.replace('!','');
+                field_flags = field_flags.replace('!', '');
             }
 
             if (field_flags.length > 0) {
-                let w = parseInt(field_flags,10);
+                let w = parseInt(field_flags, 10);
                 if (!isNaN(w)) {
-                    field_width = Math.min(w,256);
+                    field_width = Math.min(w, 256);
                 }
             }
 
@@ -683,7 +683,7 @@ makeOutput(state, line) {
         let field_end = line.indexOf('>', backtick_pos);
         if (field_end === -1) return null;
 
-        let field_data = line.substring(backtick_pos+1, field_end);
+        let field_data = line.substring(backtick_pos + 1, field_end);
         let style = this.stateToStyle(state);
 
         let obj = null;
@@ -708,14 +708,14 @@ makeOutput(state, line) {
         }
 
         let skip = (field_end - startIndex);
-        return { obj: obj, skip: skip };
+        return {obj: obj, skip: skip};
     }
 
     parseLink(line, startIndex, state) {
         let endpos = line.indexOf(']', startIndex);
         if (endpos === -1) return null;
 
-        let link_data = line.substring(startIndex+1, endpos);
+        let link_data = line.substring(startIndex + 1, endpos);
         let link_components = link_data.split('`');
         let link_label = "";
         let link_url = "";
@@ -757,7 +757,7 @@ makeOutput(state, line) {
         };
 
         let skip = (endpos - startIndex);
-        return { obj: obj, skip: skip };
+        return {obj: obj, skip: skip};
     }
 
     splitAtSpaces(line) {
