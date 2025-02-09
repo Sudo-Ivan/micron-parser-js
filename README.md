@@ -31,3 +31,12 @@ const domFragment = parser.convertMicronToFragment(micronMarkup);
 // and append it to the DOM
 document.body.appendChild(domFragment);
 ```
+
+## Best practices
+
+For optimal display of Micron content in the browser it's recommended to use a monospaced font such
+as [Roboto Mono](https://fonts.google.com/specimen/Roboto+Mono), available through Google Fonts, or wrap content in a
+`<pre>` tag
+
+The line height for your container should also be set to `line-height: normal !important;`
+
