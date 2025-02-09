@@ -762,9 +762,11 @@ makeOutput(state, line) {
     splitAtSpaces(line) {
         let out = "";
         let wordArr = line.split(" ");
-        for (let word of wordArr) {
-            word += " ";
-            out += "<span class='wordSpan'>" + this.forceMonospace(word) + "</span>";
+        for (let i = 0; i < wordArr.length; i++) {
+            out += "<span class='wordSpan'>" + this.forceMonospace(wordArr[i]) + "</span>";
+            if (i < wordArr.length - 1) {
+                out += "<span class='nodeText'> </span>";
+            }
         }
         return out;
     }
