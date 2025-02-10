@@ -176,7 +176,8 @@ class MicronParser {
                             this.appendOutput(innerDiv, outputParts, state);
                             outerDiv.appendChild(innerDiv);
 
-                            return [outerDiv];
+                            const br = document.createElement("br");
+                            return [outerDiv, br]
                         }
                         // wrap in a heading container
                         if (outputParts && outputParts.length > 0) {
