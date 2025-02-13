@@ -118,7 +118,6 @@ class MicronParser {
     }
 
     parseLine(line, state) {
-        const bgBefore = state.bg_color;
         if (line.length > 0) {
             // Check literals toggle
             if (line === "`=") {
@@ -298,7 +297,6 @@ class MicronParser {
             // Indent according to forceMonospace() character width
             el.style.marginLeft = (indent * 0.6) + "em";
         }
-        console.log(el);
     }
 
     // convert current state to a style object
