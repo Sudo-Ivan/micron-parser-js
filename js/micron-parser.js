@@ -9,8 +9,9 @@
  */
 class MicronParser {
 
-    constructor(darkTheme = true) {
+    constructor(darkTheme = true, enableForceMonospace = true) {
         this.darkTheme = darkTheme;
+        this.enableForceMonospace = enableForceMonospace;
         this.DEFAULT_FG_DARK = "ddd";
         this.DEFAULT_FG_LIGHT = "222";
         this.DEFAULT_BG = "default";
@@ -527,7 +528,11 @@ applyStyleToElement(el, style) {
 
         const flushPart = () => {
             if (part.length > 0) {
-                output.push([this.stateToStyle(state), this.splitAtSpaces(part)]);
+                if(this.enableForceMonospace) {
+                    output.push([this.stateToStyle(state), this.splitAtSpaces(part)]);
+                } else {
+                    output.push([this.stateToStyle(state), part]);
+                }
                 part = "";
             }
         };
@@ -677,7 +682,11 @@ applyStyleToElement(el, style) {
         }
         // end of line
         if (part.length > 0) {
-            output.push([this.stateToStyle(state), this.splitAtSpaces(part)]);
+            if(this.enableForceMonospace) {
+                output.push([this.stateToStyle(state), this.splitAtSpaces(part)]);
+            } else {
+                output.push([this.stateToStyle(state), part]);
+            }
         }
 
         return output;
@@ -795,7 +804,9 @@ applyStyleToElement(el, style) {
         link_url = MicronParser.formatNomadnetworkUrl(link_url);
 
         // Apply forceMonospace
-        link_label = this.splitAtSpaces(link_label);
+        if(this.enableForceMonospace) {
+            link_label = this.splitAtSpaces(link_label);
+        }
 
         let style = this.stateToStyle(state);
         let obj = {
