@@ -16,6 +16,10 @@ class MicronParser {
         this.DEFAULT_FG_LIGHT = "222";
         this.DEFAULT_BG = "default";
 
+        if (this.enableForceMonospace) {
+            this.injectMonospaceStyles();
+        }
+
         this.SELECTED_STYLES = null;
 
         this.STYLES_DARK = {
@@ -37,6 +41,29 @@ class MicronParser {
         } else {
             this.SELECTED_STYLES = this.STYLES_LIGHT;
         }
+    }
+    injectMonospaceStyles() {
+        if (document.getElementById('micron-monospace-styles')) {
+            return;
+        }
+
+        const styleEl = document.createElement('style');
+        styleEl.id = 'micron-monospace-styles';
+
+        styleEl.textContent = `
+            .M0-mnt {
+                display: inline-block;
+                width: 0.6em;
+                text-align: center;
+                white-space: pre;
+                text-decoration: inherit;
+            }
+            .M0-mws {
+                text-decoration: inherit;
+                display: inline-block;
+            }
+        `;
+        document.head.appendChild(styleEl);
     }
 
     static formatNomadnetworkUrl(url) {
@@ -825,7 +852,7 @@ applyStyleToElement(el, style) {
         let out = "";
         let wordArr = line.split(" ");
         for (let i = 0; i < wordArr.length; i++) {
-            out += "<span class='mws'>" + this.forceMonospace(wordArr[i]) + "</span>";
+            out += "<span class='M0-mws'>" + this.forceMonospace(wordArr[i]) + "</span>";
             if (i < wordArr.length - 1) {
                 out += " ";
             }
@@ -837,7 +864,7 @@ applyStyleToElement(el, style) {
         let out = "";
         let charArr = line.split("");
         for (let char of charArr) {
-            out += "<span class='mnt'>" + char + "</span>";
+            out += "<span class='M0-mnt'>" + char + "</span>";
         }
         return out;
     }
