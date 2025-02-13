@@ -631,7 +631,7 @@ class MicronParser {
             output.push([this.stateToStyle(state), this.splitAtSpaces(part)]);
         }
 
-        return (output.length > 0) ? output : null;
+        return output;
     }
 
     parseField(line, startIndex, state) {
