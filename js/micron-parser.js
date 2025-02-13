@@ -118,6 +118,7 @@ class MicronParser {
     }
 
     parseLine(line, state) {
+        const bgBefore = state.bg_color;
         if (line.length > 0) {
             // Check literals toggle
             if (line === "`=") {
@@ -224,22 +225,64 @@ class MicronParser {
             }
 
             let outputParts = this.makeOutput(state, line);
+            // outputParts can contain text (tuple) and special objects (fields/checkbox)
             if (outputParts) {
-                // outputParts can contain text (tuple) and special objects (fields/checkbox)
-                // construct a single line container
+
+                // create parent div container to apply proper section indent
                 let container = document.createElement("div");
                 this.applyAlignment(container, state);
                 this.applySectionIndent(container, state);
+
                 this.appendOutput(container, outputParts, state);
+
+                // if theres a background color, wrap with outer div
+                if (state.bg_color !== this.DEFAULT_BG) {
+                    const outerDiv = document.createElement("div");
+                    outerDiv.style.backgroundColor = this.colorToCss(state.bg_color);
+                    outerDiv.style.width = "100%";
+                    outerDiv.style.display = "block";
+                    outerDiv.style.padding = "0 2px";
+                    outerDiv.appendChild(container);
+                    return [outerDiv];
+                }
                 return [container];
             } else {
-                // Just empty line
-                return [document.createElement("br")];
-            }
+                // empty line but maintain background color if set
+                const br = document.createElement("br");
+                if (state.bg_color !== this.DEFAULT_BG) {
+                    const outerDiv = document.createElement("div");
+                    outerDiv.style.backgroundColor = this.colorToCss(state.bg_color);
+                    outerDiv.style.width = "100%";
+                    outerDiv.style.height = "1.2em";
+                    outerDiv.style.display = "block";
 
+                    const innerDiv = document.createElement("div");
+                    this.applySectionIndent(innerDiv, state);
+                    innerDiv.appendChild(br);
+                    outerDiv.appendChild(innerDiv);
+
+                    return [outerDiv];
+                }
+                return [br];
+            }
         } else {
-            // Empty line
-            return [document.createElement("br")];
+            // Empty line handling for just newline background color
+            const br = document.createElement("br");
+            if (state.bg_color !== this.DEFAULT_BG) {
+                const outerDiv = document.createElement("div");
+                outerDiv.style.backgroundColor = this.colorToCss(state.bg_color);
+                outerDiv.style.width = "100%";
+                outerDiv.style.height = "1.2em";
+                outerDiv.style.display = "block";
+
+                const innerDiv = document.createElement("div");
+                this.applySectionIndent(innerDiv, state);
+                innerDiv.appendChild(br);
+                outerDiv.appendChild(innerDiv);
+
+                return [outerDiv];
+            }
+            return [br];
         }
     }
 
@@ -251,10 +294,11 @@ class MicronParser {
     applySectionIndent(el, state) {
         // indent by state.depth
         let indent = (state.depth - 1) * 2;
-        if (indent > 0) {
+        if (indent > 0 ) {
             // Indent according to forceMonospace() character width
             el.style.marginLeft = (indent * 0.6) + "em";
         }
+        console.log(el);
     }
 
     // convert current state to a style object
@@ -281,8 +325,12 @@ class MicronParser {
         let currentSpan = null;
         let currentStyle = null;
 
-        const flushSpan = () => {
+         const flushSpan = () => {
             if (currentSpan) {
+                if (currentStyle && currentStyle.bg !== this.DEFAULT_BG) {
+                    currentSpan.style.display = "inline-block";
+                    currentSpan.style.padding = "0 2px";
+                }
                 container.appendChild(currentSpan);
                 currentSpan = null;
                 currentStyle = null;
@@ -414,7 +462,7 @@ class MicronParser {
         return stateStyle;
     }
 
-    applyStyleToElement(el, style) {
+applyStyleToElement(el, style) {
         if (!style) return;
         // convert style fg/bg to colors
         let fgColor = this.colorToCss(style.fg);
@@ -425,6 +473,8 @@ class MicronParser {
         }
         if (bgColor && bgColor !== "default") {
             el.style.backgroundColor = bgColor;
+            el.style.padding = "0 2px";
+            el.style.display = "inline-block";
         }
 
         if (style.bold) {
@@ -518,18 +568,19 @@ class MicronParser {
                         // reset fg
                         state.fg_color = this.SELECTED_STYLES.plain.fg;
                         break;
-
                     case 'B':
                         // next 3 chars => bg color
                         if (line.length >= i + 4) {
                             let color = line.substr(i + 1, 3);
                             state.bg_color = color;
                             skip = 3;
+                            flushPart(); // flush current part when background color changes
                         }
                         break;
-                    case 'b':
+                     case 'b':
                         // reset bg
                         state.bg_color = this.DEFAULT_BG;
+                        flushPart(); // flush to allow for ` tags on same line
                         break;
                     case '`':
                         state.formatting.bold = false;
