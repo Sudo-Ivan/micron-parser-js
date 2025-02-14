@@ -3,6 +3,11 @@ Micron Parser JS
 This repository provides a JavaScript parser for Micron, a lightweight, terminal-friendly markdown format used
 in  [NomadNet](https://github.com/markqvist/NomadNet) and [MeshChat](https://github.com/liamcottle/reticulum-meshchat)
 
+## Requirements
+
+Micron Parser JS requires [DOMpurify](https://github.com/cure53/DOMPurify) for HTML/XSS sanitization. To install DOMpurify, include it with your script tags above micron-parser.js or install via a package manager like NPM.
+
+
 ## Usage
 
 ```js
