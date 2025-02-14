@@ -29,7 +29,8 @@
 <body class="bg-black text-white h-screen  flex flex-col overflow-y-hidden">
     <div class="bg-zinc-900 border-b border-zinc-700 p-2 flex items-center">
         <div id="tabs" class="flex-1 flex space-x-2 overflow-x-auto"></div>
-        <button id="saveFile" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700">Save to Disk</button>
+        <button id="hideEditor" class="px-3 py-1 bg-zinc-500 text-white rounded hover:bg-red-700">Hide Editor</button>
+        <button id="saveFile" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 ml-2">Save to Disk</button>
         <button id="newFile" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 ml-2">New File</button>
     </div>
 
@@ -335,7 +336,7 @@ Here's an example of creating a field. We'll create a field named `!user_input`!
 
 `Faaa
 `=
-A simple input field: `B444`<user_input`Pre-defined data>`b
+A simple input field: `B444`&lt;user_input`Pre-defined data&gt;`b
 `=
 ``
 
@@ -343,7 +344,7 @@ You must always set a field `*name`*, but you can of course omit the pre-defined
 
 `Faaa
 `=
-An empty input field: `B444`<demo_empty`>`b
+An empty input field: `B444`&lt;demo_empty`&gt;`b
 `=
 ``
 
@@ -351,7 +352,7 @@ You can set the size of the field like this:
 
 `Faaa
 `=
-A sized input field:  `B444`<16|with_size`>`b
+A sized input field:  `B444`&lt;16|with_size`&gt;`b
 `=
 ``
 
@@ -359,7 +360,7 @@ It is possible to mask fields, for example for use with passwords and similar:
 
 `Faaa
 `=
-A masked input field: `B444`<!|masked_demo`hidden text>`b
+A masked input field: `B444`&lt;!|masked_demo`hidden text&gt;`b
 `=
 ``
 
@@ -367,7 +368,7 @@ And you can of course control all parameters at the same time:
 
 `Faaa
 `=
-Full control: `B444`<!32|all_options`hidden text>`b
+Full control: `B444`&lt;!32|all_options`hidden text&gt;`b
 `=
 ``
 
@@ -375,54 +376,54 @@ Collecting the above markup produces the following output:
 
 `Faaa`B333
 
-A simple input field: `B444`<user_input`Pre-defined data>`B333
+A simple input field: `B444`&lt;user_input`Pre-defined data&gt;`B333
 
-An empty input field: `B444`<demo_empty`>`B333
+An empty input field: `B444`&lt;demo_empty`&gt;`B333
 
-A sized input field:  `B444`<16|with_size`>`B333
+A sized input field:  `B444`&lt;16|with_size`&gt;`B333
 
-A masked input field: `B444`<!|masked_demo`hidden text>`B333
+A masked input field: `B444`&lt;!|masked_demo`hidden text&gt;`B333
 
-Full control: `B444`<!32|all_options`hidden text>`B333
+Full control: `B444`&lt;!32|all_options`hidden text&gt;`B333
 `b
->>> Checkboxes
+&gt;&gt;&gt; Checkboxes
 
 In addition to text fields, Checkboxes are another way of submitting data. They allow the user to make a single selection or select multiple options.
 
 `Faaa
 `=
-`<?|field_name|value`>`b Label Text`
+`&lt;?|field_name|value`&gt;`b Label Text`
 `=
 When the checkbox is checked, it's field will be set to the provided value. If there are multiple checkboxes that share the same field name, the checked values will be concatenated when they are sent to the node by a comma.
 ``
 
-`B444`<?|sign_up|1`>`b Sign me up`
+`B444`&lt;?|sign_up|1`&gt;`b Sign me up`
 
 You can also pre-check both checkboxes and radio groups by appending a |* after the field value.
 
-`B444`<?|checkbox|1|*`>`b Pre-checked checkbox`
+`B444`&lt;?|checkbox|1|*`&gt;`b Pre-checked checkbox`
 
->>> Radio groups
+&gt;&gt;&gt; Radio groups
 
 Radio groups are another input that lets the user chose from a set of options. Unlike checkboxes, radio buttons with the same field name are mutually exclusive.
 
 Example:
 
 `=
-`B900`<^|color|Red`>`b  Red
+`B900`&lt;^|color|Red`&gt;`b  Red
 
-`B090`<^|color|Green`>`b Green
+`B090`&lt;^|color|Green`&gt;`b Green
 
-`B009`<^|color|Blue`>`b Blue
+`B009`&lt;^|color|Blue`&gt;`b Blue
 `=
 
 will render:
 
-`B900`<^|color|Red`>`b  Red
+`B900`&lt;^|color|Red`&gt;`b  Red
 
-`B090`<^|color|Green`>`b Green
+`B090`&lt;^|color|Green`&gt;`b Green
 
-`B009`<^|color|Blue`>`b Blue
+`B009`&lt;^|color|Blue`&gt;`b Blue
 
 In this example, when the data is submitted, `B444` field_color`b will be set to whichever value from the list was selected.
 
@@ -459,7 +460,7 @@ To display literal content, for example source-code, or blocks of text that shou
 
 `=
         </div>
-        <div class="w-1/2 border-r border-zinc-700">
+        <div id='editor-pane' class="w-1/2 border-r border-zinc-700">
             <textarea
                 id="text-editor"
                 class="w-full h-full bg-black text-white p-4 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -525,11 +526,17 @@ To display literal content, for example source-code, or blocks of text that shou
             constructor() {
                 this.fileManager = new FileManager();
                 this.parser = new MicronParser(true);
+
+                this.isEditorVisible = true;
+
                 this.editor = document.getElementById('text-editor');
+                this.editorPane = document.getElementById('editor-pane');
                 this.output = document.getElementById('output');
                 this.tabsContainer = document.getElementById('tabs');
+
                 this.newFileBtn = document.getElementById('newFile');
                 this.saveFileBtn = document.getElementById('saveFile')
+                this.hideEditorBtn = document.getElementById('hideEditor');
 
                 this.setupEventListeners();
                 this.renderTabs();
@@ -540,6 +547,7 @@ To display literal content, for example source-code, or blocks of text that shou
                 this.editor.addEventListener('input', () => this.handleInput());
                 this.newFileBtn.addEventListener('click', () => this.createNewFile());
                 this.saveFileBtn.addEventListener('click', () => this.saveFile());
+                this.hideEditorBtn.addEventListener('click', () => this.toggleEditor());
             }
 
             handleInput() {
@@ -563,7 +571,7 @@ To display literal content, for example source-code, or blocks of text that shou
                 const content = this.fileManager.files[this.fileManager.currentFile];
 
                 const blob = new Blob([content], { type: 'text/plain' });
-                console.log(blob);
+
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
                 a.download = this.fileManager.currentFile;
@@ -574,7 +582,7 @@ To display literal content, for example source-code, or blocks of text that shou
                 document.body.removeChild(a);
                 URL.revokeObjectURL(a.href);
             }
-            // todo: open file
+
 
             createTab(fileName) {
                 const tab = document.createElement('div');
@@ -590,7 +598,7 @@ To display literal content, for example source-code, or blocks of text that shou
                 closeBtn.innerHTML = '×';
                 closeBtn.onclick = (e) => {
                     e.stopPropagation();
-                    if (Object.keys(this.fileManager.files).length > 1 && confirm(`Deltee ${fileName}?`)) {
+                    if (Object.keys(this.fileManager.files).length > 1 && confirm(`Delete ${fileName}?`)) {
                         this.fileManager.deleteFile(fileName);
                         this.renderTabs();
                         this.loadCurrentFile();
@@ -607,6 +615,19 @@ To display literal content, for example source-code, or blocks of text that shou
                 Object.keys(this.fileManager.files).forEach(fileName => {
                     this.tabsContainer.appendChild(this.createTab(fileName));
                 });
+            }
+
+            toggleEditor() {
+                this.isEditorVisible = !this.isEditorVisible;
+
+                this.editorPane.style.display = this.isEditorVisible ? 'block' : 'none';
+
+                this.hideEditorBtn.textContent = this.isEditorVisible ? 'Hide Editor' : 'Show Editor';
+                this.hideEditorBtn.classList.toggle('bg-zinc-500', this.isEditorVisible);
+                this.hideEditorBtn.classList.toggle('bg-green-500', !this.isEditorVisible);
+
+                const outputPane = this.output.parentElement;
+                outputPane.className = this.isEditorVisible ? 'w-1/2 overflow-auto' : 'w-full overflow-auto';
             }
 
             loadFile(fileName) {
