@@ -9,8 +9,8 @@ in  [NomadNet](https://github.com/markqvist/NomadNet) and [MeshChat](https://git
 // Import Micron Parser (requires modules)
 import MicronParser from './js/micron-parser.js';
 
-// Create a new parser (darkTheme = true/false)
-const parser = new MicronParser(true);
+// Create a new parser (darkTheme = true/false | defaults to true, forceMonospace = true/false | defaults to true)
+const parser = new MicronParser(true, true);
 
 // Input Micron markup
 const micronMarkup = `
@@ -34,10 +34,6 @@ document.body.appendChild(domFragment);
 
 ## Best practices
 
-For optimal display of Micron content in the browser it's recommended to use a monospaced font such
-as [Roboto Mono](https://fonts.google.com/specimen/Roboto+Mono), available through Google Fonts, or wrap content in a
-`<pre>` tag
+For optimal display of Micron content in the browser it's recommended to use a monospaced font with NerdFont icon support, such as the ones provided [here](https://www.nerdfonts.com/font-downloads).  
 
-The line height for your container should also be set to `line-height: normal !important;` to better match the terminal
-environment
 

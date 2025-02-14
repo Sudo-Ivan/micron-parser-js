@@ -164,8 +164,6 @@ class MicronParser {
             }
         }
 
-        console.log(fragment);
-
         return fragment;
     }
 
