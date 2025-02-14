@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -16,26 +16,65 @@
         }
 
         body {
-            font-family: Roboto Mono Nerd Font, monospace, monospace !important;
+            font-family: Roboto Mono Nerd Font, monospace !important;
             line-height: normal !important;
         }
 
         pre {
-            font-family: Roboto Mono Nerd Font, monospace, monospace !important;
+            font-family: Roboto Mono Nerd Font, monospace !important;
             line-height: normal !important;
-
         }
-
     </style>
 </head>
-<body class="bg-[#000] text-white h-screen overflow-hidden">
-<div class="flex h-full">
-    <div class="w-1/2 border-r border-gray-700 ">
-            <textarea
-                    id="text-editor"
-                    class="w-full h-full bg-[#000] text-white p-4 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 "
-                    placeholder="">
+<body class="bg-black text-white h-screen  flex flex-col overflow-y-hidden">
+    <div class="bg-zinc-900 border-b border-zinc-700 p-2 flex items-center">
+        <div id="tabs" class="flex-1 flex space-x-2 overflow-x-auto"></div>
+        <button id="saveFile" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700">Save to Disk</button>
+        <button id="newFile" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 ml-2">New File</button>
+    </div>
 
+    <div class="flex flex-1 min-h-0 min-h-0">
+        <div hidden id="welcomeContent">
+`Ffd0
+`=
+            _                                                           _
+           (_)                                                         (_)
+  _ __ ___  _  ___ _ __ ___  _ __ ______ _ __   __ _ _ __ ___  ___ _ __ _ ___
+ | '_ ` _ \| |/ __| '__/ _ \| '_ \______| '_ \ / _` | '__/ __|/ _ \ '__| / __|
+ | | | | | | | (__| | | (_) | | | |     | |_) | (_| | |  \__ \  __/ |_ | \__ \
+ |_| |_| |_|_|\___|_|  \___/|_| |_|     | .__/ \__,_|_|  |___/\___|_(_)| |___/
+                                        | |                           _/ |
+                                        |_|                          |__/
+
+`=
+`f
+
+`!Welcome to micron-parser.js`!
+-
+Micron is a lightweight, terminal-friendly monospace markdown format used in Reticulum applications such as `!MeshChat`! `*(https://github.com/liamcottle/reticulum-meshchat) `*and   `!NomadNet`! `*(https://github.com/markqvist/NomadNet)`*.
+
+Micron supports a number of tags that can be used to create interactive pages which can be served over extremely low bandwidth connections. micron-parser.js is a 1:1 implementation of the MicronParser found in NomadNet.
+
+-∿
+
+`!With Micron, you can``:
+
+`c Align`b
+
+`r text,
+
+`a
+`c
+set `B005 backgrounds, `b and `*` `B777`Ffffcombine any number of`f`b`_`_ `Ff00f`Ff80o`Ffd0r`F9f0m`F0f2a`F0fdt`F07ft`F43fi`F70fn`Fe0fg `ftags.
+``
+
+Micron also supports content sections, dividers, links, and dynamic input fields like text inputs, checkboxes, and radio groups.
+
+To view the full guide click on the tab "NomadNetGuide.mu" in the top navigation bar.
+
+To create a new Micron tab, click "New File".
+        </div>
+        <div hidden id="nomadNetGuideContent">
 -∿
 <
 
@@ -119,7 +158,7 @@ If no heading text is defined, the section will appear as a sub-section without 
 
 Tags are used to format text with micron. Some tags can appear anywhere in text, and some must appear at the beginning of a line. If you need to write text that contains a sequence that would be interpreted as a tag, you can escape it with the character \\.
 
-In the following sections, the different tags will be introduced. Any styling set within micron can be reset to the default style by using the special \\`\\` tag anywhere in the markup, which will immediately remove any formatting previously specified. 
+In the following sections, the different tags will be introduced. Any styling set within micron can be reset to the default style by using the special \\`\\` tag anywhere in the markup, which will immediately remove any formatting previously specified.
 
 >>Alignment
 
@@ -348,7 +387,7 @@ Full control: `B444`<!32|all_options`hidden text>`B333
 `b
 >>> Checkboxes
 
-In addition to text fields, Checkboxes are another way of submitting data. They allow the user to make a single selection or select multiple options. 
+In addition to text fields, Checkboxes are another way of submitting data. They allow the user to make a single selection or select multiple options.
 
 `Faaa
 `=
@@ -419,41 +458,175 @@ To display literal content, for example source-code, or blocks of text that shou
 -
 
 `=
+        </div>
+        <div class="w-1/2 border-r border-zinc-700">
+            <textarea
+                id="text-editor"
+                class="w-full h-full bg-black text-white p-4 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter your Micron markup here..."></textarea>
+        </div>
 
-                </textarea>
+        <div class="w-1/2 overflow-auto">
+            <pre id="output" class="bg-black break-words whitespace-pre-wrap p-4 text-wrap"></pre>
+        </div>
     </div>
 
-    <div class="w-1/2 ">
-            <pre id="output" class="bg-[#000] break-words whitespace-pre-wrap p-4 text-wrap h-full overflow-auto">
-               
-            </pre>
-    </div>
-</div>
+    <script type="module">
+        import MicronParser from './js/micron-parser.js';
 
-<script type="module">
-    import MicronParser from './js/micron-parser.js';
+        class FileManager {
+            constructor() {
+                this.files = JSON.parse(localStorage.getItem('micronFiles')) || {};
+                this.currentFile = localStorage.getItem('currentMicronFile') || null;
+                this.init();
+            }
 
-    const parser = new MicronParser(true);
+            init() {
+                // create initial default files
+                if (Object.keys(this.files).length === 0) {
+                    const welcomeContent = document.getElementById('welcomeContent').innerText;
+                    const nomadNetGuideContent = document.getElementById('nomadNetGuideContent').innerText;
 
-    const textEditor = document.getElementById('text-editor');
-    const output = document.getElementById('output');
+                    this.createFile('welcome.mu', welcomeContent);
+                    this.createFile('NomadNetGuide.mu', nomadNetGuideContent);
+                    this.currentFile = 'welcome.mu';
+                    this.saveToStorage();
+                }
+            }
 
-    const init = () => {
-        renderOutput();
-    }
+            createFile(name, content = '') {
+                if (!name.endsWith('.mu')) name += '.mu';
+                this.files[name] = content;
+                this.currentFile = name;
+                this.saveToStorage();
+                return name;
+            }
 
+            updateFile(name, content) {
+                this.files[name] = content;
+                this.saveToStorage();
+            }
 
-    const renderOutput = () => {
-        const inputText = textEditor.value;
-        const parsedHtml = parser.convertMicronToHtml(inputText);
+            deleteFile(name) {
+                delete this.files[name];
+                if (this.currentFile === name) {
+                    this.currentFile = Object.keys(this.files)[0] || null;
+                }
+                this.saveToStorage();
+            }
 
-        output.innerHTML = parsedHtml;
-    };
+            saveToStorage() {
+                localStorage.setItem('micronFiles', JSON.stringify(this.files));
+                localStorage.setItem('currentMicronFile', this.currentFile);
+            }
+        }
 
-    init();
+        class Editor {
+            constructor() {
+                this.fileManager = new FileManager();
+                this.parser = new MicronParser(true);
+                this.editor = document.getElementById('text-editor');
+                this.output = document.getElementById('output');
+                this.tabsContainer = document.getElementById('tabs');
+                this.newFileBtn = document.getElementById('newFile');
+                this.saveFileBtn = document.getElementById('saveFile')
 
+                this.setupEventListeners();
+                this.renderTabs();
+                this.loadCurrentFile();
+            }
 
-    textEditor.addEventListener('input', renderOutput);
-</script>
+            setupEventListeners() {
+                this.editor.addEventListener('input', () => this.handleInput());
+                this.newFileBtn.addEventListener('click', () => this.createNewFile());
+                this.saveFileBtn.addEventListener('click', () => this.saveFile());
+            }
+
+            handleInput() {
+                const content = this.editor.value;
+                this.output.innerHTML = this.parser.convertMicronToHtml(content);
+                if (this.fileManager.currentFile) {
+                    this.fileManager.updateFile(this.fileManager.currentFile, content);
+                }
+            }
+
+            createNewFile() {
+                const name = prompt('Enter file name:');
+                if (name) {
+                    const fileName = this.fileManager.createFile(name);
+                    this.renderTabs();
+                    this.loadFile(fileName);
+                }
+            }
+            saveFile() {
+                if (!this.fileManager.currentFile) return null;
+                const content = this.fileManager.files[this.fileManager.currentFile];
+
+                const blob = new Blob([content], { type: 'text/plain' });
+                console.log(blob);
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = this.fileManager.currentFile;
+
+                document.body.appendChild(a);
+                a.click();
+
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
+            }
+            // todo: open file
+
+            createTab(fileName) {
+                const tab = document.createElement('div');
+                tab.className = `group flex items-center px-3 py-1 rounded cursor-pointer ${
+                    fileName === this.fileManager.currentFile ? 'bg-blue-600' : 'bg-zinc-800 hover:bg-zinc-700'
+                }`;
+
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = fileName;
+
+                const closeBtn = document.createElement('button');
+                closeBtn.className = 'ml-2 px-1 text-zinc-400 hover:text-white';
+                closeBtn.innerHTML = '×';
+                closeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (Object.keys(this.fileManager.files).length > 1 && confirm(`Deltee ${fileName}?`)) {
+                        this.fileManager.deleteFile(fileName);
+                        this.renderTabs();
+                        this.loadCurrentFile();
+                    }
+                };
+
+                tab.onclick = () => this.loadFile(fileName);
+                tab.append(nameSpan, closeBtn);
+                return tab;
+            }
+
+            renderTabs() {
+                this.tabsContainer.innerHTML = '';
+                Object.keys(this.fileManager.files).forEach(fileName => {
+                    this.tabsContainer.appendChild(this.createTab(fileName));
+                });
+            }
+
+            loadFile(fileName) {
+                this.fileManager.currentFile = fileName;
+                this.fileManager.saveToStorage();
+                this.loadCurrentFile();
+                this.renderTabs();
+            }
+
+            loadCurrentFile() {
+                if (this.fileManager.currentFile) {
+                    const content = this.fileManager.files[this.fileManager.currentFile];
+                    this.editor.value = content;
+                    this.output.innerHTML = this.parser.convertMicronToHtml(content);
+                }
+            }
+        }
+
+        new Editor();
+
+    </script>
 </body>
 </html>
