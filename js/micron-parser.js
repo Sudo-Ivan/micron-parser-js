@@ -7,6 +7,7 @@
  * Documentation for the Micron markdown format can be found here:
  * https://raw.githubusercontent.com/markqvist/NomadNet/refs/heads/master/nomadnet/ui/textui/Guide.py
  */
+
 class MicronParser {
 
     constructor(darkTheme = true, enableForceMonospace = true) {
@@ -18,6 +19,14 @@ class MicronParser {
 
         if (this.enableForceMonospace) {
             this.injectMonospaceStyles();
+        }
+
+        try {
+            if (typeof DOMPurify === 'undefined') {
+                console.warn('DOMPurify is not installed. Include it above micron-parser.js or run npm install dompurify');
+            }
+        } catch (error) {
+            console.warn('DOMPurify is not installed. Include it above micron-parser.js or run npm install dompurify');
         }
 
         this.SELECTED_STYLES = null;
@@ -41,7 +50,9 @@ class MicronParser {
         } else {
             this.SELECTED_STYLES = this.STYLES_LIGHT;
         }
+
     }
+
     injectMonospaceStyles() {
         if (document.getElementById('micron-monospace-styles')) {
             return;
@@ -51,14 +62,17 @@ class MicronParser {
         styleEl.id = 'micron-monospace-styles';
 
         styleEl.textContent = `
-            .M0-mnt {
+            .Mu-nl {
+                cursor: pointer;
+            }
+            .Mu-mnt {
                 display: inline-block;
                 width: 0.6em;
                 text-align: center;
                 white-space: pre;
                 text-decoration: inherit;
             }
-            .M0-mws {
+            .Mu-mws {
                 text-decoration: inherit;
                 display: inline-block;
             }
@@ -104,7 +118,13 @@ class MicronParser {
             }
         }
 
-        return html;
+
+       try {
+        return DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+       } catch (error) {
+            console.warn('DOMPurify is not installed. Include it above micron-parser.js or run npm install dompurify ', error);
+            return `<p style="color: red;"> ⚠ DOMPurify is not installed. Include it above micron-parser.js or run npm install dompurify </p>`;
+       }
     }
 
     convertMicronToFragment(markup) {
@@ -130,9 +150,11 @@ class MicronParser {
         const lines = markup.split("\n");
 
         for (let line of lines) {
+            line = DOMPurify.sanitize(line, { USE_PROFILES: { html: true } });
             const lineOutput = this.parseLine(line, state);
             if (lineOutput && lineOutput.length > 0) {
                 for (let el of lineOutput) {
+
                     fragment.appendChild(el);
                 }
             } else if (lineOutput && lineOutput.length === 0) {
@@ -141,6 +163,8 @@ class MicronParser {
                 fragment.appendChild(document.createElement("br"));
             }
         }
+
+        console.log(fragment);
 
         return fragment;
     }
@@ -459,12 +483,14 @@ class MicronParser {
                             directURL += directURL.includes('`') ? `|${queryString}` : `\`${queryString}`;
                         }
 
-                        a.setAttribute("onclick", `event.preventDefault(); onNodePageUrlClick('${directURL}', '${fieldStr}', false, false)`);
+                        a.setAttribute("data-destination", `${directURL}`);
+                        a.setAttribute("data-fields", `${fieldStr}`);
                     } else {
                         // no fields or request variables, just handle the direct URL
-                        a.setAttribute("onclick", `event.preventDefault(); onNodePageUrlClick('${directURL}', null, false, false)`);
+                        a.setAttribute("data-destination", `${directURL}`);
                     }
-
+                    a.classList.add('Mu-nl');
+                    a.setAttribute('data-action', "openNode");
                     a.innerHTML = p.label;
                     this.applyStyleToElement(a, this.styleFromState(p.style));
                     container.appendChild(a);
@@ -852,7 +878,7 @@ applyStyleToElement(el, style) {
         let out = "";
         let wordArr = line.split(" ");
         for (let i = 0; i < wordArr.length; i++) {
-            out += "<span class='M0-mws'>" + this.forceMonospace(wordArr[i]) + "</span>";
+            out += "<span class='Mu-mws'>" + this.forceMonospace(wordArr[i]) + "</span>";
             if (i < wordArr.length - 1) {
                 out += " ";
             }
@@ -864,7 +890,7 @@ applyStyleToElement(el, style) {
         let out = "";
         let charArr = line.split("");
         for (let char of charArr) {
-            out += "<span class='M0-mnt'>" + char + "</span>";
+            out += "<span class='Mu-mnt'>" + char + "</span>";
         }
         return out;
     }
