@@ -5,7 +5,7 @@ in  [NomadNet](https://github.com/markqvist/NomadNet) and [MeshChat](https://git
 
 ## Requirements
 
-Micron Parser JS requires [DOMpurify](https://github.com/cure53/DOMPurify) for HTML/XSS sanitization. To install DOMpurify, include it with your script tags above micron-parser.js or install via a package manager like [NPM](https://www.npmjs.com/package/micron-parser).
+Micron Parser JS requires [DOMpurify](https://github.com/cure53/DOMPurify) for HTML/XSS sanitization. To install DOMpurify, include it with your script tags above micron-parser.js or install via a package manager like [NPM](https://www.npmjs.com/package/micron-parser) `npm install micron-parser`
 
 
 ## Usage
