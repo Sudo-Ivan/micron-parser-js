@@ -7,7 +7,7 @@
  * Documentation for the Micron markdown format can be found here:
  * https://raw.githubusercontent.com/markqvist/NomadNet/refs/heads/master/nomadnet/ui/textui/Guide.py
  */
-
+ 
 class MicronParser {
 
     constructor(darkTheme = true, enableForceMonospace = true) {
