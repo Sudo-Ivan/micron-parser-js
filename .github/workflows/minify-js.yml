@@ -1,0 +1,31 @@
+name: Minify build action
+
+on:
+  push:
+    paths:
+      - 'js/micron-parser.js'
+
+jobs:
+  minify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: install reqs
+        run: npm install -g uglify-js
+
+      - name: minify
+        run: uglifyjs js/micron-parser.js -o js/micron-parser.min.js -c -m
+
+      - name: commit
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'Automated minification of micron-parser.js'
+
