@@ -890,7 +890,8 @@ applyStyleToElement(el, style) {
 
     forceMonospace(line) {
         let out = "";
-        let charArr = line.split("");
+        // Properly split compount emoji, source: https://stackoverflow.com/a/71619350
+        let charArr = [...new Intl.Segmenter().segment(line)].map(x => x.segment);
         for (let char of charArr) {
             out += "<span class='Mu-mnt'>" + char + "</span>";
         }
