@@ -572,7 +572,11 @@ applyStyleToElement(el, style) {
             if (line === "\\`=") {
                 line = "`=";
             }
-            return [[this.stateToStyle(state), line]];
+            if(this.enableForceMonospace) {
+                return [[this.stateToStyle(state), this.splitAtSpaces(line)]];
+            } else {
+                return [[this.stateToStyle(state), line]];
+            }
         }
 
         let output = [];
