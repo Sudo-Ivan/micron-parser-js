@@ -7,5 +7,13 @@
   "background_color": "#000000",
   "theme_color": "#000000",
   "orientation": "portrait-primary",
-  "scope": "/"
+  "scope": "/",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23000' rx='50'/><rect x='50' y='50' width='412' height='412' fill='%23000' stroke='%23fff' stroke-width='3' rx='25'/><text x='256' y='200' text-anchor='middle' fill='%23fff' font-family='monospace' font-size='120' font-weight='bold'>µ</text><text x='256' y='320' text-anchor='middle' fill='%23fff' font-family='monospace' font-size='60'>PARSER</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }
