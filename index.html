@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Micron Playground</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Micron Playground">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="vendor/purify.min.js"></script>
     <script type="module" src="js/micron-parser.js"></script>
@@ -474,6 +479,19 @@ To display literal content, for example source-code, or blocks of text that shou
 
     <script type="module">
         import MicronParser from './js/micron-parser.js';
+
+        // Register service worker for PWA functionality
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+            });
+        }
 
         class FileManager {
             constructor() {
