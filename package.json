@@ -1,0 +1,16 @@
+{
+  "name": "micron-parser-js",
+  "version": "1.0.0",
+  "description": "JavaScript parser for Micron markup language",
+  "main": "index.html",
+  "scripts": {
+    "build-css": "tailwindcss -i ./src/input.css -o ./css/output.css --watch",
+    "build-css-prod": "tailwindcss -i ./src/input.css -o ./css/output.css --minify"
+  },
+  "keywords": ["micron", "parser", "markdown", "terminal", "nomadnet"],
+  "author": "Sudo-Ivan",
+  "license": "MIT",
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}

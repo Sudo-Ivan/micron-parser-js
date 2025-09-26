@@ -2,6 +2,7 @@ const CACHE_NAME = 'micron-parser-v1';
 const urlsToCache = [
   '/',
   '/index.html',
+  '/css/output.css',
   '/js/micron-parser.js',
   '/js/micron-parser.min.js',
   '/vendor/purify.min.js',
